@@ -1,2 +1,3 @@
 RewriteEngine On
-RewriteRule ^test/([0-9]+)$ /sarge/index.php?param=$1
+RewriteBase /sarge/
+RewriteRule ^data/(.*)/(list|get|add|delete|update)(/([0-9]*))?$ ./data/$1.php?operation=$2&item=$3
