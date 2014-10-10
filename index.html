@@ -1,0 +1,415 @@
+
+<html>
+<head>
+  <title>Geo Editor</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+    <link rel="stylesheet" href="./css/jquery-ui.min.css" />
+    <link rel="stylesheet" href="./css/mapeditor.css" />
+
+    <style type="text/css">
+		.SearchSection {font-size: 8pt; color: gray; margin: 3px}
+		.SearchSection input.text {font-size: 8pt; width: 200px}
+		.EditorHeading { background-color: #ddeeff; font-weight: bold; font-size: large; border: 1px solid #99ccff; border-radius: 5px; }
+		.Editor {font-size: x-small; margin-bottom: 0px}
+		.Coordinates { background: rgba(200, 200, 255, 0.8); border: 1px solid gray; padding: 5px; overflow: auto; width: 240px; margin-bottom: 2px; }
+		.CoordinatesUtm { font-size: 8pt; text-align: right; float:left; margin: 3px; padding: 5px; border: 1px solid gray; background-color: rgba(255,255,255, 0.6)}
+		.CoordinatesUtmX { font-size: 8pt; text-align: right; float:left; margin: 3px; padding: 13px; color: red; font-weight: bold; border: 1px solid red; background-color: rgba(255,255,255, 0.6) }
+		.CoordinatesLatLng { font-size: 8pt; text-align: right; float:left; margin: 2px; padding: 3px; border: 1px solid gray; background-color: rgba(255,255,255, 0.2) }
+		.ItemList td {vertical-align: center }
+		#cTrackerInfo { margin: 5px; background-color: #ffffcc;  }
+		.NewEditor { position: absolute; width: 270px }
+		.TableSection { overflow-y: scroll; height: 250px; margin-bottom: 3px }
+		#cSearchInfo {font: x-small; border: 1px solid gray; margin: 2px; padding: 4px; font-weight: bold; background-color: #ffffcc }
+		.ui-front { z-index: 9999 }
+		.olControlPermalink {right: 13px !important}
+	</style>
+
+    <script type="text/javascript" src="./js/jquery-1.10.2.min.js"></script>
+
+	<script type="text/javascript">     
+		var $j = jQuery.noConflict();
+	</script>
+
+    <script type="text/javascript" src="./js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="./js/prototype.js"></script>
+	<script type="text/javascript">
+		if(window.Prototype) {
+			delete Object.prototype.toJSON;
+			delete Array.prototype.toJSON;
+			delete Hash.prototype.toJSON;
+			delete String.prototype.toJSON;
+		}	
+	</script>
+    <script type="text/javascript" src="./js/OpenLayers.js"></script>
+    <script type="text/javascript" src="./js/proj4js-compressed.js"></script>
+    <script type="text/javascript" src="./js/GarminDevicePlugin.js"></script>
+    <script type="text/javascript" src="./js/GarminGpsDataStructures.js"></script>
+    <script type="text/javascript" src="./js/Util-DateTimeFormat.js"></script>
+
+    <script type="text/javascript" src="./js/map.js"></script>
+	
+    <script type="text/javascript">    
+	
+        $j( window ).resize(function() {
+			SizeMapToWindow();
+		});
+
+		function SizeMapToWindow() {
+			$j("#cMap").width(200);
+			$j("#cMap").height(200);
+			$j("#cContent").width(300);
+			$j("#cContent").height($j(window).height() - 400);
+            $j("#cMap").width($j("#cMapCell").width());
+			$j("#cMap").height($j(document).height());
+			$j("#cBottomContent").css("top", $j(window).height() - $j("#cBottomContent").height() - 10);
+			gMap.updateSize();
+			gMap.baseLayer.redraw();
+		}
+		
+		var gMap = null;
+		var gEditors = {};
+		
+		$j(function () {
+			gMap = CreateMap("cMap");
+
+			LoadSearchInfo();
+			
+			if (getParameterByName("SearchID")) {
+				gEditors["ScopeEditor"] = new ScopeEditor(gMap, "cContent", "Søksområde");
+				gEditors["PoiEditor"] = new PoiEditor(gMap, "cContent", "Punkter (POI)", "F7");
+				gEditors["AreaEditor"] = new AreaEditor(gMap, "cContent", "Teiger", "F8");
+				gEditors["TrackEditor"] = new TrackEditor(gMap, "cContent", "Sporlogger", "F9");
+			}
+			gEditors["TrackerEditor"] = new TrackerEditor(gMap, "cContent", "Tracking");
+			gEditors["UtmGrid"] = new UtmGrid(gMap, "cContent", "UTM Grid");
+			$j("#cContent").append($j("#cGpsPage").html());
+			$j("#cContent").accordion({animate: false});
+			$j("#cGpsPage").html("");
+			SizeMapToWindow();
+			
+			$j("#cTrackerInfo").load(
+				function(e) {
+					var vCss = document.createElement("link") 
+					vCss.href = "../style/popup.css"; 
+					vCss.rel = "stylesheet"; 
+					vCss.type = "text/css"; 
+					this.contentWindow.document.body.appendChild(vCss);
+					vCss = document.createElement("link") 
+					vCss.href = "../../sarge/css/mapeditor.css"; 
+					vCss.rel = "stylesheet"; 
+					vCss.type = "text/css"; 
+					this.contentWindow.document.body.appendChild(vCss);
+				}
+			)
+			
+			$j("#cSearchMapZoom").html("");
+			for (var i=0; i<gMap.getNumZoomLevels(); i++)
+			{
+				var vOption = $j("<option/>");
+				vOption.val(gMap.getMinZoom() + i);
+				vOption.html(gMap.getMinZoom() + i);
+				$j("#cSearchMapZoom").append(vOption);				
+			}
+			
+			$j("#cSearchInfoDialog").dialog({
+				autoOpen: false,
+				width: 400,
+				height: 200,
+				buttons: [
+				{
+					text: "OK",
+					click: function() {
+						SaveSearchInfo();
+					}
+				},
+				{
+					text: "Cancel",
+					click: function() {
+						$j(this).dialog( "close" );
+					}
+				}
+				],
+				open: function() {
+					gMap.events.register("move", gMap, MapMoveSearchInfoDialogListener);
+				},
+				close: function() {
+					gMap.events.unregister("move", gMap, MapMoveSearchInfoDialogListener);
+				},
+				
+			});
+        });
+		function LoadSearchInfo(pSearchID)
+		{
+			$j("#cSearchInfo").html("Loading...");
+			var vSearchID = pSearchID;
+			if (!vSearchID) vSearchID = getParameterByName("SearchID");
+			if (vSearchID)
+			{
+				$j("#cSearchID").attr("SearchID", getParameterByName("SearchID"));
+				$j.ajax({
+					url: SARLOGURL + "/api.php/geodata/aktivitet?aktivitetid=" + vSearchID,
+					type: "GET",
+					dataType: "json",
+					success: function(pData) {
+						ShowSearchInfo(pData);
+					}
+				});
+			}
+			else
+			{
+				if (!gMap.getCenter()) {
+					var vWGS84Projection = new OpenLayers.Projection("EPSG:4326");
+					var vUtm33Projection = new OpenLayers.Projection("EPSG:32633");
+					gMap.setCenter(new OpenLayers.LonLat(8.9,60.7).transform(vWGS84Projection, vUtm33Projection), 0);
+				}
+			
+				$j.ajax({
+					url: SARLOGURL + "/api.php/geodata/aktiviteter",
+					type: "GET",
+					dataType: "json",
+					success: function(pData) {
+						var vDropdown = $j("<select><option>Velg aksjon</option></select>");
+						for (var i=0; i<pData.length; i++)
+						{
+							var vOption = $j("<option>");
+							vOption.html(pData[i].Navn + " [" + pData[i].ID + "]");
+							vOption.val(pData[i].ID);
+							vDropdown.append(vOption);
+						}
+						
+						vDropdown.change(function() {
+							var vSearchID = vDropdown.val();
+							location.href = "?SearchID=" + vSearchID;
+							//LoadSearchInfo(vSearchID);
+						});
+						
+						$j("#cSearchInfo").html("");
+						$j("#cSearchInfo").append(vDropdown);
+						$j("#cSearchInfo").append("&nbsp;");
+						var vNewButton = $j("<input type='button' value='Ny'/>");
+						vNewButton.click(function() {
+							UpdatePositionAndZoomFromMap();
+							$j("#cSearchInfoDialog").dialog("open");
+						});
+						$j("#cSearchInfo").append(vNewButton);
+					}
+				});
+			}
+		}
+		function ShowSearchInfo(pData)
+		{
+			$j("#cSearchInfo").html(pData.Navn + " [" + pData.ID + "]");
+			$j("#cSearchInfo").css("cursor", "pointer");
+			$j("#cSearchInfo").click(function() {
+				$j("#cSearchInfoDialog").dialog("open");
+			});
+			$j("#cSearchID").attr("SearchID", pData.ID);
+			$j("#cSearchID").html(pData.ID);
+			$j("#cSearchName").val(pData.Navn);
+			if (pData["KartSenterBreddegrad"])
+				$j("#cSearchMapCenterLat").val(pData["KartSenterBreddegrad"]);
+			if (pData["KartSenterLengdegrad"])
+				$j("#cSearchMapCenterLon").val(pData["KartSenterLengdegrad"]);
+			if (pData["KartZoom"])
+				$j("#cSearchMapZoom").val(pData["KartZoom"]);
+			if (!gMap.getCenter()) {
+				var vWGS84Projection = new OpenLayers.Projection("EPSG:4326");
+				var vUtm33Projection = new OpenLayers.Projection("EPSG:32633");
+				if (pData["KartSenterBreddegrad"] && pData["KartSenterLengdegrad"] && pData["KartZoom"]) {
+					gMap.setCenter(new OpenLayers.LonLat(pData["KartSenterLengdegrad"],pData["KartSenterBreddegrad"]).transform(vWGS84Projection, vUtm33Projection), pData["KartZoom"]);
+				}
+				else {
+					gMap.setCenter(new OpenLayers.LonLat(8.9,60.7).transform(vWGS84Projection, vUtm33Projection), 0);
+				}
+			}
+		}
+		
+		function SaveSearchInfo()
+		{
+			var vData = {
+				ID: "",
+				Navn: $j("#cSearchName").val(),
+				KartSenterBreddegrad: $j("#cSearchMapCenterLat").val(),
+				KartSenterLengdegrad: $j("#cSearchMapCenterLon").val(),
+				KartZoom: $j("#cSearchMapZoom").val()
+			};
+			if ($j("#cSearchID").attr("SearchID")) vData.ID = $j("#cSearchID").attr("SearchID");
+		
+			$j.ajax({
+				url: SARLOGURL + "/api.php/geodata/lagreaktivitet",
+				type: "POST",
+				dataType: "json",
+				contentType: "application/json",
+				data: JSON.stringify(vData),
+				success: function(pData) {
+					if (!$j("#cSearchID").attr("SearchID"))
+						location.href = "?SearchID=" + pData.ID;
+					else
+						ShowSearchInfo(pData);
+					$j("#cSearchInfoDialog").dialog("close");
+				}
+			});
+		}
+		function MapMoveSearchInfoDialogListener() {
+			UpdatePositionAndZoomFromMap();
+		}
+		function UpdatePositionAndZoomFromMap()
+		{
+			var vCenter = gMap.getCenter();
+			var vWGS84Projection = new OpenLayers.Projection("EPSG:4326");
+			var vUtm33Projection = new OpenLayers.Projection("EPSG:32633");
+			vCenter.transform(vUtm33Projection, vWGS84Projection);
+			var vZoom = gMap.getZoom();
+			$j("#cSearchMapCenterLon").val(vCenter.lon);
+			$j("#cSearchMapCenterLat").val(vCenter.lat);
+			$j("#cSearchMapZoom").val(vZoom);
+		}
+		function GetSearchID() {
+			if ($j("#cSearchID").attr("SearchID"))
+				return $j("#cSearchID").attr("SearchID");
+			else if (getParameterByName("SearchID"))
+				return getParameterByName("SearchID");
+			else 
+				return null;
+		}
+		
+		function SendSelectedItemsToGps() {
+			var vGarminInfo = $j("#cMainGarminInfo");
+			var vPlugin = gEditors.PoiEditor.GetPlugin();
+			var vFactory = new Garmin.GpsDataFactory();
+			var vGpx = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>";
+			vGpx += '<gpx creator="GeoEdit" version="1.1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/ActivityExtension/v1 http://www8.garmin.com/xmlschemas/ActivityExtensionv1.xsd http://www.garmin.com/xmlschemas/AdventuresExtensions/v1 http://www8.garmin.com/xmlschemas/AdventuresExtensionv1.xsd http://www.garmin.com/xmlschemas/PressureExtension/v1 http://www.garmin.com/xmlschemas/PressureExtensionv1.xsd http://www.garmin.com/xmlschemas/TripExtensions/v1 http://www.garmin.com/xmlschemas/TripExtensionsv1.xsd http://www.garmin.com/xmlschemas/TripMetaDataExtensions/v1 http://www.garmin.com/xmlschemas/TripMetaDataExtensionsv1.xsd http://www.garmin.com/xmlschemas/ViaPointTransportationModeExtensions/v1 http://www.garmin.com/xmlschemas/ViaPointTransportationModeExtensionsv1.xsd http://www.garmin.com/xmlschemas/CreationTimeExtensions/v1 http://www.garmin.com/xmlschemas/CreationTimeExtensionsv1.xsd" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:wptx1="http://www.garmin.com/xmlschemas/WaypointExtension/v1" xmlns:gpxtrx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:trp="http://www.garmin.com/xmlschemas/TripExtensions/v1" xmlns:adv="http://www.garmin.com/xmlschemas/AdventuresExtensions/v1" xmlns:prs="http://www.garmin.com/xmlschemas/PressureExtension/v1" xmlns:tmd="http://www.garmin.com/xmlschemas/TripMetaDataExtensions/v1" xmlns:vptm="http://www.garmin.com/xmlschemas/ViaPointTransportationModeExtensions/v1" xmlns:ctx="http://www.garmin.com/xmlschemas/CreationTimeExtension/v1">'
+
+			var vEditors = [gEditors.PoiEditor];
+			for (var j=0; j<vEditors.length; j++)
+			{
+				var vEditor = vEditors[j];
+				var vItems = vEditor.GetSelectedItems();
+				for (var i=0;i<vItems.length; i++) {
+					vGpx += vEditor.CreateGpxItem(vItems[i]);
+				}
+			}
+			
+			vEditors = [gEditors.ScopeEditor, gEditors.AreaEditor, gEditors.TrackEditor];
+			for (var j=0; j<vEditors.length; j++)
+			{
+				var vEditor = vEditors[j];
+				var vItems = vEditor.GetSelectedItems();
+				for (var i=0;i<vItems.length; i++) {
+					vGpx += vEditor.CreateGpxItem(vItems[i]);
+				}
+			}
+			
+			vGpx += "</gpx>";
+			$j("#cGpx").val(vGpx);
+			
+			if(vPlugin) {
+				vGarminInfo.html("Garmin Plugin available, looking for devices");
+				vPlugin.startFindDevices();
+				
+				var vTimer = window.setInterval(function() {
+					if (vPlugin.finishFindDevices())
+					{
+						vGarminInfo.html("<div>Found devices:</div>");
+						window.clearInterval(vTimer);
+						
+						var xmlDevicesString = vPlugin.getDevicesXml();
+						var xmlDevicesDoc = createDocumentFromString( xmlDevicesString );
+						var deviceElements = xmlDevicesDoc.getElementsByTagName("Device");
+						for (var i=0; i<deviceElements.length; i++)
+						{
+							var vId = deviceElements[i].getAttribute("Number");
+							var vName = deviceElements[i].getAttribute("DisplayName");
+							var vItem = $j("<div class='GpsDevice'/>").html(vName).attr("GarminDeviceID", vId);
+							vGarminInfo.append(vItem);
+							
+							vItem.click(function() {
+								var vId = $j(this).attr("GarminDeviceID");
+								vGarminInfo.html("Writing GPS data...");
+								var vFilename = "GeoEdit"; // + (new Date().getTime());
+								vPlugin.startWriteToGps(vGpx, vFilename, vId);
+								var vWriteTimer = window.setInterval(function() {
+									vGarminInfo.append("<span>.</span>");
+									try {
+										if (vPlugin.finishWriteToGps() == 3) {
+											vGarminInfo.html("Done");
+											window.clearInterval(vWriteTimer);
+										}
+									}
+									catch (ex) {
+										vGarminInfo.html(ex.toString());
+									}
+								}, 1000);
+							});
+						}
+					}
+				}, 1000);
+			}
+
+			
+		}
+		function getParameterByName(name) {
+			name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+			var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+				results = regex.exec(location.search);
+			return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+		}
+    </script>
+    </head>
+    <body style="margin: 0px; overflow: hidden">
+		<table cellspacing="0" cellpadding="0" width="100%">
+			<tr>
+				<td valign="top" id="cLeftPane" style="padding: 3px; width: 300px">
+					<div id="cSearchInfo">
+						&nbsp;
+					</div>
+					<div id="cContent" style="display: inline-block; vertical-align: top; width: 300px">
+					</div>
+					<div id="cGpsPage">
+						<div class='EditorHeading' style="padding-left: 30px">GPS</div>
+						<div id="cBottomContent">
+							<iframe id="cTrackerInfo" style="border: 1px solid gray; width: 290px; height: 100px; scroll: auto; display: none"></iframe>
+							<div>
+								<input type="button" value="Send til GPS" onclick="SendSelectedItemsToGps()"/>
+								<div>
+									<small><i>GPX data: (for input and output)</i></small>
+									<textarea id="cGpx"></textarea>
+								</div>
+								<div id="cMainGarminInfo"></div>
+							</div>
+						</div>
+					</div>
+				</td>
+				<td valign="top" style="" id="cMapCell">
+					<div style="display: inline-block; width: 800px; height: 800px;" id="cMap"></div>
+				</td>
+			</tr>
+		</table>
+		<object id="GarminActiveXControl" style="WIDTH: 0px; HEIGHT: 0px; visible: hidden" height="0" width="0" classid="CLSID:099B5A62-DE20-48C6-BF9E-290A9D1D8CB5"><object id="GarminNetscapePlugin" type="application/vnd-garmin.mygarmin" width="0" height="0"></object></object>
+		<div style="position: absolute; z-index: 99999999; right: 5px; top: 5px; height: 20px; padding: 3px; background-color: #336699; opacity:0.7; color: white; text-align: center; cursor: default; border-radius: 3px" onclick="$j('#cLeftPane').toggle(); SizeMapToWindow();">meny av/på</div>
+		<div id="cSearchInfoDialog" style="display: none; z-index: 9999">
+			<table>
+				<tr>
+					<td>Navn</td>
+					<td><input type="text" id="cSearchName">, ID: <span style="" id="cSearchID">--</span></td>
+				</tr>
+				<tr>
+					<td>Posisjon</td>
+					<td>
+						<input type="text" style="width: 50px" id="cSearchMapCenterLon">N 
+						<input type="text" style="width: 50px" id="cSearchMapCenterLat">E, 
+						Zoom:
+						<select style="width: 40px" id="cSearchMapZoom">
+							<option>1</option>
+							<option>2</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td><i>Beveg kartet og zoom for å sette posisjon</i></td>
+				</tr>
+			</table>
+		</div>
+	</body>
+</html>

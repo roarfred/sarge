@@ -153,13 +153,13 @@ function formatDegreesMinutes(pNumber) {
 	return vDegrees + "&deg;" + padDigits(vMinutes.toFixed(3),2) + "&apos;";
 }
 
-if (!window["BaseEditor"]) require("./js/geoedit/baseeditor.js");
-if (!window["PoiEditor"]) require("./js/geoedit/poieditor.js");
-if (!window["ScopeEditor"]) require("./js/geoedit/scopeeditor.js");
-if (!window["TrackEditor"]) require("./js/geoedit/trackeditor.js");
-if (!window["AreaEditor"]) require("./js/geoedit/areaeditor.js");
-if (!window["TrackerEditor"]) require("./js/geoedit/trackereditor.js");
-if (!window["UtmGrid"]) require("./js/geoedit/utmgrid.js");
+if (!window["BaseEditor"]) require("./js/baseeditor.js");
+if (!window["PoiEditor"]) require("./js/poieditor.js");
+if (!window["ScopeEditor"]) require("./js/scopeeditor.js");
+if (!window["TrackEditor"]) require("./js/trackeditor.js");
+if (!window["AreaEditor"]) require("./js/areaeditor.js");
+if (!window["TrackerEditor"]) require("./js/trackereditor.js");
+if (!window["UtmGrid"]) require("./js/utmgrid.js");
 
 function require(script) {
     document.writeln("<script type='text/javascript' src='" + script + "'></script>");
