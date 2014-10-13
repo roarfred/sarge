@@ -5,7 +5,7 @@ SAR Geo Edit - An editor for geo object to assist in search and rescue operation
 
 This application will work on top of a polaric server (http://www.la3t.no/polaricserver) and it has two main goals:
 
-1) To let the search team define, edit and share geolocated information in realtime (multi user) and in a standarized with regards to exchange format and visual formatting
+1) To let the search team define, edit and share geolocated information in realtime (multi user) and in a standarized way with regards to exchange formats and visual formatting
 
 2) To minimize the use for single-user systems as Garmin Map Source, Base Camp and OZI Explorer (as main storage of geo location information)
 
