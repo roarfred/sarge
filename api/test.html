@@ -1,0 +1,51 @@
+<html>
+<head>
+	<script src="../js/jquery-1.10.2.min.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		$(function() {
+			var data = {
+				"Name": "Tull",
+				"Description": 98,
+				"DateStart": new Date(),
+				"MapCenterLatitude": 5.9,
+				"MapCenterLongitude": 59.0,
+				"MapZoom": 14
+			};
+			$("#data").val(JSON.stringify(data));
+		});
+		
+		function Test() {
+			$("#output").val("");
+			$("#error").contents().find("html").html("");
+			$.ajax({
+				url: $("#url").val(),
+				type: "POST",
+				contentType: "application/json; charset=utf-8",
+				dataType: "json",
+				data: $("#data").val(),
+				success: function(data) {
+					$("#output").val(JSON.stringify(data));
+				},
+				error: function(error) {
+					$("#error").contents().find("html").html(error.responseText);
+					//alert(error);
+				}
+			});
+		}
+		
+	</script>
+</head>
+<body>
+	<input id="url" type="text" value="./search/add" /><br/>
+	<textarea id="data" style="width: 500px; height: 500px">
+
+	</textarea>
+	<textarea id="output" style="width: 500px; height: 500px">
+	</textarea><br/>
+	<button onclick='Test()'>Test</button><br/>
+	
+	<iframe id='error' src="about:blank" style="width: 500px;height: 500px">
+	</iframe>
+</body>
+</html>
+
