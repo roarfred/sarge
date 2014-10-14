@@ -1,7 +1,7 @@
 <?php
 	include 'api_db.php';
 
-	function get($searchid, $id, $timestamp) {
+	function get($searchid, $timestamp, $id) {
 		return getdata(createSelectSql("Section", $searchid, $id, $timestamp));
 	}
 
@@ -9,52 +9,42 @@
 		return getdata(createSelectSql("Section", $searchid, null, $timestamp));
 	}
 	
-	function createSelectSql($table, $searchid, $id, $timestamp) {
-		$sql = "SELECT * FROM " . $table . " AS t WHERE t.SearchID=" . $searchid . " AND NOT EXISTS (SELECT * FROM " . $table . " AS t2 WHERE t2.ID = t.ID AND t2.TimeStamp > t.TimeStamp)";	  
-		if (!empty($timestamp))
-			$sql = $sql . " AND t.TimeStamp > '" . $timestamp . "'";
-		else
-			$sql = $sql . " AND t.Action != 'D' ";
+	function insert($searchid, $data, $action) {
 		
-		if (!empty($id))
-			$sql = $sql . " AND t.ID = " . $id;
-			
-		$sql = $sql . " ORDER BY t.TimeStamp ";
-		return $sql;
-	}
-
-	function insert($data, $action) {
 		$timestamp = new DateTime();
 
 		$sql = 
-"INSERT INTO Section(ID, SearchID, TimeStamp, Action, Name, Description, Symbol, Radius, Polygon)
+"INSERT INTO Section(ID, SearchID, TimeStamp, Action, Name, Description, FillColor, FillOpacity, LineColor, LineWidth, Polygon)
 VALUES(" . $data->ID . ", " .
-		$data->AktivitetID . ", " .
+		$searchid . ", " .
 		"'" . $timestamp->format('Y-m-d H:i:s.u') . "', " .
 		"'" . $action . "', " .
 		"'" . $data->Name . "', " .
-		"'" . $data->Description . "', " .
-		"'" . $data->Symbol . "', " .
-		(empty($data->Radius) ? "NULL" : $data->Radius) . ", " .
-		"'" . $data->Polygon . "')";
+		(empty($data->Description) ? "NULL" : "'" . $data->Description . "'") . ", " .
+		(empty($data->FillColor) ? "NULL" : "'" . $data->FillColor . "'") . ", " .
+		(empty($data->FillOpacity) ? "NULL" : $data->FillOpacity) . ", " .
+		(empty($data->LineColor) ? "NULL" : "'" . $data->LineWidth . "'") . ", " .
+		(empty($data->LineWidth) ? "NULL" : $data->LineWidth) . ", " .
+		(empty($data->Polygon) ? "NULL" : "'" . $data->Polygon . "'") .
+		")";
 		
 		execute($sql);
-		$data->Action = $handling;
-		$data->TimeStamp = $timestamp;
+		$data->Action = $action;
+		$data->TimeStamp = $timestamp->format('Y-m-d H:i:s.u');
 		return $data;
 	}
 
-	function update($data) {
-		return insert($data, "U");
+	function update($searchid, $data) {
+		return insert($searchid, $data, "U");
 	}
 	
-	function add($data) {
+	function add($searchid, $data) {
 		$data->ID = getNextID("Section");
-		return insert($data, "I");
+		return insert($searchid, $data, "I");
 	}
 
 	function delete() {
-		return insert($data, "D");
+		return insert($searchid, $data, "D");
 	}
 ?>
 
