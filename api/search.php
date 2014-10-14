@@ -1,9 +1,14 @@
 <?php
 	include 'api_db.php';
 
-	function get() {
-		echo "This is the get function";
+	function get($id) {
+		return getdata("SELECT * FROM Search WHERE ID = " . $id);
 	}
+
+	function getlist() {
+		return getdata("SELECT * FROM Search;");
+	}
+
 	function add($data) {
 		if (empty($data->ID)) {
 			$data->ID = getNextID("Search");
@@ -17,16 +22,29 @@
 		", " . (empty($data->MapCenterLongitude) ? "NULL" : $data->MapCenterLongitude) . 
 		", " . (empty($data->MapZoom) ? "NULL" : $data->MapZoom) . ")";
 		execute($sql);
+		$data->Action = "Added";
 		return $data;
-	}
-	function delete() {
-		echo "This is the delete function";
-	}
-	function update() {
-		echo "This is the update function";
-	}
-	function getlist() {
-		return getdata("SELECT * FROM Search;");
+	}	
+	
+	function update($data) {
+		$sql = "UPDATE Search SET 
+		Name = '" . $data->Name . "', 
+		DateStart = " . (empty($data->DateStart) ? "NULL" : "'" . $data->DateStart . "'") . ",
+		DateEnd = " . (empty($data->DateEnd) ? "NULL" : "'" . $data->DateEnd . "'") . ",
+		MapCenterLatitude = " . (empty($data->MapCenterLatitude) ? "NULL" : $data->MapCenterLatitude) . ",
+		MapCenterLongitude = " . (empty($data->MapCenterLongitude) ? "NULL" : $data->MapCenterLongitude) . ", 
+		MapZoom = " . (empty($data->MapZoom) ? "NULL" : $data->MapZoom) . "
+		WHERE ID = " . $data->ID;
+		execute($sql);
+		$data->Action = "Updated";
+		return $data;
+	}	
+	
+	function delete($data) {
+		$sql = "DELETE Search WHERE ID = " . $data->ID;
+		execute($sql);
+		$data->Action = "Deleted";
+		return $data;	
 	}
 ?>
 

@@ -19,7 +19,7 @@
 			$("#error").contents().find("html").html("");
 			$.ajax({
 				url: $("#url").val(),
-				type: "POST",
+				type: $("#data").val() ? "POST" : "GET",
 				contentType: "application/json; charset=utf-8",
 				dataType: "json",
 				data: $("#data").val(),

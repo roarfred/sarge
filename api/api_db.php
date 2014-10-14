@@ -52,6 +52,11 @@
 	}
 	
 	$func = $_GET["operation"];
-	$res = $func(json_decode(file_get_contents('php://input')));
+	
+	if ($_SERVER['REQUEST_METHOD'] == "POST")
+		$res = $func(json_decode(file_get_contents('php://input')));
+	else
+		$res = $func($_GET["id"]);
+	
 	echo json_encode($res);
 ?>
