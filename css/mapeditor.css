@@ -72,13 +72,13 @@ td.ButtonCell {
 }
 .ui-accordion .ui-accordion-content { padding: 3px }
 .SelectImage {
-    background-image: url('../../img/geoedit/select.png');
+    background-image: url('../img/select.png');
 }
 .DeleteImage {
-    background-image: url('../../img/geoedit/delete.png');
+    background-image: url('../img/delete.png');
 }
 .EditImage {
-    background-image: url('../../img/geoedit/edit.png');
+    background-image: url('../img/edit.png');
 }
 
 table.ItemList {

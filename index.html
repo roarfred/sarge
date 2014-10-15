@@ -76,9 +76,9 @@
 			
 			if (getParameterByName("SearchID")) {
 				gEditors["ScopeEditor"] = new ScopeEditor(gMap, "cContent", "Søksområde");
-				gEditors["PoiEditor"] = new PoiEditor(gMap, "cContent", "Punkter (POI)", "F7");
-				gEditors["AreaEditor"] = new AreaEditor(gMap, "cContent", "Teiger", "F8");
-				gEditors["TrackEditor"] = new TrackEditor(gMap, "cContent", "Sporlogger", "F9");
+//				gEditors["PoiEditor"] = new PoiEditor(gMap, "cContent", "Punkter (POI)", "F7");
+//				gEditors["AreaEditor"] = new AreaEditor(gMap, "cContent", "Teiger", "F8");
+//				gEditors["TrackEditor"] = new TrackEditor(gMap, "cContent", "Sporlogger", "F9");
 			}
 			gEditors["TrackerEditor"] = new TrackerEditor(gMap, "cContent", "Tracking");
 			gEditors["UtmGrid"] = new UtmGrid(gMap, "cContent", "UTM Grid");
@@ -147,7 +147,7 @@
 			{
 				$j("#cSearchID").attr("SearchID", getParameterByName("SearchID"));
 				$j.ajax({
-					url: SARLOGURL + "/api.php/geodata/aktivitet?aktivitetid=" + vSearchID,
+					url: "./api/search/get/" + vSearchID,
 					type: "GET",
 					dataType: "json",
 					success: function(pData) {
@@ -164,7 +164,7 @@
 				}
 			
 				$j.ajax({
-					url: SARLOGURL + "/api.php/geodata/aktiviteter",
+					url: "./api/search/getlist",
 					type: "GET",
 					dataType: "json",
 					success: function(pData) {
@@ -172,7 +172,7 @@
 						for (var i=0; i<pData.length; i++)
 						{
 							var vOption = $j("<option>");
-							vOption.html(pData[i].Navn + " [" + pData[i].ID + "]");
+							vOption.html(pData[i].Name + " [" + pData[i].ID + "]");
 							vOption.val(pData[i].ID);
 							vDropdown.append(vOption);
 						}
@@ -198,25 +198,25 @@
 		}
 		function ShowSearchInfo(pData)
 		{
-			$j("#cSearchInfo").html(pData.Navn + " [" + pData.ID + "]");
+			$j("#cSearchInfo").html(pData.Name + " [" + pData.ID + "]");
 			$j("#cSearchInfo").css("cursor", "pointer");
 			$j("#cSearchInfo").click(function() {
 				$j("#cSearchInfoDialog").dialog("open");
 			});
 			$j("#cSearchID").attr("SearchID", pData.ID);
 			$j("#cSearchID").html(pData.ID);
-			$j("#cSearchName").val(pData.Navn);
-			if (pData["KartSenterBreddegrad"])
-				$j("#cSearchMapCenterLat").val(pData["KartSenterBreddegrad"]);
-			if (pData["KartSenterLengdegrad"])
-				$j("#cSearchMapCenterLon").val(pData["KartSenterLengdegrad"]);
-			if (pData["KartZoom"])
-				$j("#cSearchMapZoom").val(pData["KartZoom"]);
+			$j("#cSearchName").val(pData.Name);
+			if (pData["MapCenterLatitude"])
+				$j("#cSearchMapCenterLat").val(pData["MapCenterLatitude"]);
+			if (pData["MapCenterLongitude"])
+				$j("#cSearchMapCenterLon").val(pData["MapCenterLongitude"]);
+			if (pData["MapZoom"])
+				$j("#cSearchMapZoom").val(pData["MapZoom"]);
 			if (!gMap.getCenter()) {
 				var vWGS84Projection = new OpenLayers.Projection("EPSG:4326");
 				var vUtm33Projection = new OpenLayers.Projection("EPSG:32633");
-				if (pData["KartSenterBreddegrad"] && pData["KartSenterLengdegrad"] && pData["KartZoom"]) {
-					gMap.setCenter(new OpenLayers.LonLat(pData["KartSenterLengdegrad"],pData["KartSenterBreddegrad"]).transform(vWGS84Projection, vUtm33Projection), pData["KartZoom"]);
+				if (pData["MapCenterLatitude"] && pData["MapCenterLongitude"] && pData["MapZoom"]) {
+					gMap.setCenter(new OpenLayers.LonLat(pData["MapCenterLongitude"],pData["MapCenterLatitude"]).transform(vWGS84Projection, vUtm33Projection), pData["MapZoom"]);
 				}
 				else {
 					gMap.setCenter(new OpenLayers.LonLat(8.9,60.7).transform(vWGS84Projection, vUtm33Projection), 0);
@@ -228,15 +228,20 @@
 		{
 			var vData = {
 				ID: "",
-				Navn: $j("#cSearchName").val(),
-				KartSenterBreddegrad: $j("#cSearchMapCenterLat").val(),
-				KartSenterLengdegrad: $j("#cSearchMapCenterLon").val(),
-				KartZoom: $j("#cSearchMapZoom").val()
+				Name: $j("#cSearchName").val(),
+				MapCenterLatitude: $j("#cSearchMapCenterLat").val(),
+				MapCenterLongitude: $j("#cSearchMapCenterLon").val(),
+				MapZoom: $j("#cSearchMapZoom").val()
 			};
-			if ($j("#cSearchID").attr("SearchID")) vData.ID = $j("#cSearchID").attr("SearchID");
-		
+			
+			var vUrl = "./api/search/add";
+			if ($j("#cSearchID").attr("SearchID")) {
+				vData.ID = $j("#cSearchID").attr("SearchID");
+				vUrl = "./api/search/update";
+			}
+			
 			$j.ajax({
-				url: SARLOGURL + "/api.php/geodata/lagreaktivitet",
+				url: vUrl,
 				type: "POST",
 				dataType: "json",
 				contentType: "application/json",

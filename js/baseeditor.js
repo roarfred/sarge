@@ -35,6 +35,7 @@ BaseEditor.prototype.SetCaption = function(pCaption) {
 	$j("#" + this.id).prev().html(this.Caption);
 }
 BaseEditor.prototype.GetAktivitetsID = function() { return GetSearchID(); }
+BaseEditor.prototype.GetSearchID = function() { return GetSearchID(); }
 
 BaseEditor.prototype.CreateEditor = null;
 BaseEditor.prototype.SaveItem = null;
@@ -211,7 +212,7 @@ BaseEditor.prototype.PopulateTable = function() {
 					
 					for (var i=0; i<pData.length; i++)
 					{
-						if (!vEditor.MaxTimeStamp || pData[i].TidsStempel > vEditor.MaxTimeStamp) vEditor.MaxTimeStamp = pData[i].TidsStempel;
+						if (!vEditor.MaxTimeStamp || pData[i].TimeStamp > vEditor.MaxTimeStamp) vEditor.MaxTimeStamp = pData[i].TimeStamp;
 						vEditor.OnServerItemReceived(pData[i]);
 					}
 					
@@ -686,13 +687,13 @@ BaseEditor.prototype.WaitForData = function() {
 	
 	vEditor.WaitForDataRequest = $j.ajax({
 		url: vEditor.GetWaitForDataUrl(vEditor.GetAktivitetsID(), vEditor.MaxTimeStamp),
-		type: "POST",
+		type: "GET",
 		dataType: "json",
 		success: function(pData) { 
 			
 			for (var i=0; i<pData.length; i++)
 			{
-				if (!vEditor.MaxTimeStamp || pData[i].TidsStempel > vEditor.MaxTimeStamp) vEditor.MaxTimeStamp = pData[i].TidsStempel;
+				if (!vEditor.MaxTimeStamp || pData[i].TimeStamp > vEditor.MaxTimeStamp) vEditor.MaxTimeStamp = pData[i].TimeStamp;
 				vEditor.OnServerItemReceived(pData[i]);
 			}
 			vEditor.SortList();

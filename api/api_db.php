@@ -17,22 +17,27 @@
 	echo json_encode($res);
 
 	
-	function getdata($sql) {
+	function getdata($sql, $wait) {
 		$data = array();
-
-		if ($mysqli = getconnection()) {
-			if ($result = $mysqli->query($sql)) {
-				while ($row = $result->fetch_object()) {
-					$data[] = $row;
+		$start = microtime(true);
+		do 
+		{
+			if ($mysqli = getconnection()) {
+				if ($result = $mysqli->query($sql)) {
+					while ($row = $result->fetch_object()) {
+						$data[] = $row;
+					}
+					$result->close();
 				}
-				$result->close();
+				else {
+					 echo "Error fetching data: " . $mysqli->error;
+				}
+				$mysqli->close();
 			}
-			else {
-				 echo "Error fetching data: " . $mysqli->error;
-			}
-
-			$mysqli->close();
-		}
+			if ($wait && sizeof($data) == 0)
+				sleep(3);
+		} while ($wait && sizeof($data) == 0 && microtime(true) - $start < 30);
+		
 		return $data;
 	}
 	
@@ -61,8 +66,8 @@
 	}
 	
 	function getNextID($table) {
-		$max = getdata("SELECT max(ID) AS MaxID FROM " . $table);
-		if ($max->MaxID)
+		$max = getdata("SELECT max(ID) AS MaxID FROM " . $table, false);
+		if (!empty($max->MaxID))
 			return $max->MaxID + 1;
 		else
 			return 1;

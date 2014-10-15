@@ -1,15 +1,15 @@
 <?php
 	include 'api_db.php';
 
-	function get($id) {
-		return getdata("SELECT * FROM Search WHERE ID = " . $id);
+	function get($searchid, $timestamp, $id) {
+		return getdata("SELECT * FROM Search WHERE ID = " . $id, false)[0];
 	}
 
 	function getlist() {
-		return getdata("SELECT * FROM Search;");
+		return getdata("SELECT * FROM Search;", false);
 	}
 
-	function add($data) {
+	function add($searchid, $data) {
 		if (empty($data->ID)) {
 			$data->ID = getNextID("Search");
 		}
@@ -26,7 +26,7 @@
 		return $data;
 	}	
 	
-	function update($data) {
+	function update($searchid, $data) {
 		$sql = "UPDATE Search SET 
 		Name = '" . $data->Name . "', 
 		DateStart = " . (empty($data->DateStart) ? "NULL" : "'" . $data->DateStart . "'") . ",
@@ -40,7 +40,7 @@
 		return $data;
 	}	
 	
-	function delete($data) {
+	function delete($searchid, $data) {
 		$sql = "DELETE Search WHERE ID = " . $data->ID;
 		execute($sql);
 		$data->Action = "Deleted";
