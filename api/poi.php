@@ -2,11 +2,11 @@
 	include 'api_db.php';
 
 	function get($searchid, $timestamp, $id) {
-		return getdata(createSelectSql("Poi", $searchid, $id, $timestamp));
+		return getdata(createSelectSql("Poi", $searchid, $id, $timestamp), isset($timestamp));
 	}
 
 	function getlist($searchid, $timestamp) {
-		return getdata(createSelectSql("Poi", $searchid, null, $timestamp));
+		return getdata(createSelectSql("Poi", $searchid, null, $timestamp), isset($timestamp));
 	}
 	
 	function insert($searchid, $data, $action) {
@@ -17,11 +17,11 @@ VALUES(" . $data->ID . ", " .
 		$searchid . ", " .
 		"'" . $timestamp->format('Y-m-d H:i:s.u') . "', " .
 		"'" . $action . "', " .
-		"'" . $data->Name . "', " .
+		(empty($data->Name) ? "NULL" : "'" . $data->Name . "'") . ", " .
 		(empty($data->Description) ? "NULL" : "'" . $data->Description . "'") . ", " .
 		(empty($data->Symbol) ? "NULL" : "'" . $data->Symbol . "'") . ", " .
 		(empty($data->Radius) ? "NULL" : $data->Radius) . ", " .
-		(empty($data->Point) ? "NULL" : "'" . $data->Track . "'") .
+		(empty($data->Point) ? "NULL" : "'" . $data->Point . "'") .
 		")";
 		
 		execute($sql);
@@ -39,7 +39,7 @@ VALUES(" . $data->ID . ", " .
 		return insert($searchid, $data, "I");
 	}
 
-	function delete() {
+	function delete($searchid, $data) {
 		return insert($searchid, $data, "D");
 	}
 ?>

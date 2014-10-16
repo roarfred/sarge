@@ -2,17 +2,15 @@
 	include 'api_db.php';
 
 	function get($searchid, $timestamp, $id) {
-		return getdata(createSelectSql("Section", $searchid, $id, $timestamp));
+		return getdata(createSelectSql("Section", $searchid, $id, $timestamp), isset($timestamp));
 	}
 
 	function getlist($searchid, $timestamp) {
-		return getdata(createSelectSql("Section", $searchid, null, $timestamp));
+		return getdata(createSelectSql("Section", $searchid, null, $timestamp), isset($timestamp));
 	}
 	
 	function insert($searchid, $data, $action) {
-		
 		$timestamp = new DateTime();
-
 		$sql = 
 "INSERT INTO Section(ID, SearchID, TimeStamp, Action, Name, Description, FillColor, FillOpacity, LineColor, LineWidth, Polygon)
 VALUES(" . $data->ID . ", " .

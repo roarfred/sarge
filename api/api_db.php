@@ -67,8 +67,9 @@
 	
 	function getNextID($table) {
 		$max = getdata("SELECT max(ID) AS MaxID FROM " . $table, false);
-		if (!empty($max->MaxID))
-			return $max->MaxID + 1;
+		
+		if (sizeof($max) > 0)
+			return $max[0]->MaxID + 1;
 		else
 			return 1;
 	}

@@ -2,11 +2,11 @@
 	include 'api_db.php';
 
 	function get($searchid, $timestamp, $id) {
-		return getdata(createSelectSql("Track", $searchid, $id, $timestamp));
+		return getdata(createSelectSql("Track", $searchid, $id, $timestamp), isset($timestamp));
 	}
 
 	function getlist($searchid, $timestamp) {
-		return getdata(createSelectSql("Track", $searchid, null, $timestamp));
+		return getdata(createSelectSql("Track", $searchid, null, $timestamp), isset($timestamp));
 	}
 	
 	function insert($searchid, $data, $action) {

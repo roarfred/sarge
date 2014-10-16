@@ -10,16 +10,16 @@ PoiEditor.prototype.CreateItemFromServerItem = function(pData)
 {
 	var vEditor = this;
 
-	var vPointLatLng = eval(pData.Punkt);
-	var vItem = vEditor.CreatePoint(vPointLatLng[0], vPointLatLng[1], pData.Navn, pData.Symbol, pData.Beskrivelse, pData.Radius);
+	var vPointLatLng = eval(pData.Point);
+	var vItem = vEditor.CreatePoint(vPointLatLng[0], vPointLatLng[1], pData.Name, pData.Symbol, pData.Description, pData.Radius);
 	vItem.id = pData.ID;
-	vItem.timestamp = pData.TidsStempel;
+	vItem.timestamp = pData.TimeStamp;
 
 	return vItem;
 }
 
-PoiEditor.prototype.GetWaitForDataUrl = function(pActivityID, pMaxTimeStamp) {
-	return SARLOGURL + "/api.php/geodata/punkter?aktivitetid=" + pActivityID + (pMaxTimeStamp ? "&tidsstempel=" + pMaxTimeStamp : "");
+PoiEditor.prototype.GetWaitForDataUrl = function(pSearchID, pMaxTimeStamp) {
+	return "./api/" + pSearchID + "/poi/getlist" + (pMaxTimeStamp ? "/t" + pMaxTimeStamp : "");
 }
 PoiEditor.prototype.SaveItem = function(pItem) {
 	var vEditor = this;
@@ -31,22 +31,25 @@ PoiEditor.prototype.SaveItem = function(pItem) {
 		vPoint.transform(vEditor.Map.getProjectionObject(), vWGS84Projection);
 		vPoints.push([vPoint.x, vPoint.y]);
 	});
+	
+	var vSearchID = vEditor.GetSearchID();	
+	var vUrl = "./api/" + vSearchID + "/poi/" + (pItem.id ? "update" : "add");
+
 	$j.ajax({
-		url: SARLOGURL + "/api.php/geodata/lagrepunkt",
+		url: vUrl,
 		type: "POST",
 		dataType: "json",
 		contentType: "application/json",
 		data: JSON.stringify({
-			AktivitetID: vEditor.GetAktivitetsID(),
-			Navn: pItem.GeoObject.attributes.name,
+			Name: pItem.GeoObject.attributes.name,
 			ID: pItem.id ? pItem.id : "",
 			Symbol: pItem.GeoObject.attributes.symbol,
-			Beskrivelse: pItem.GeoObject.attributes.description,
+			Description: pItem.GeoObject.attributes.description,
 			Radius: pItem.GeoObject.attributes.radius,
-			Punkt: JSON.stringify(vPoints[0])
+			Point: JSON.stringify(vPoints[0])
 		}),
 		success: function(pData) {
-			pItem.timestamp = pData["TidsStempel"];
+			pItem.timestamp = pData["TimeStamp"];
 			pItem.id = pData["ID"];
 			vEditor.UpdateRow(vEditor.GetRowFromItem(pItem), pItem);
 		},
@@ -57,12 +60,11 @@ PoiEditor.prototype.DeleteItem = function(pItem) {
 	var vEditor = this;
 	if (pItem.id && pItem.GeoObject && confirm("Dette vil slette punktet. Vil du fortsette?")) {
 		$j.ajax({
-			url: SARLOGURL + "/api.php/geodata/slettpunkt",
+			url: "./api/" + vEditor.GetSearchID() + "/poi/delete",
 			type: "POST",
 			dataType: "json",
 			contentType: "application/json",
 			data: JSON.stringify({
-				AktivitetID: vEditor.GetAktivitetsID(),
 				ID: pItem.id
 			}),
 			success: function(pData) {
@@ -112,7 +114,7 @@ PoiEditor.prototype.CreateMapLayer = function () {
         labelOutlineWidth: 2,
         labelYOffset: -25,
         pointRadius: 8,
-        externalGraphic: "./img/geoedit/gpx/${symbol}.png",
+        externalGraphic: "./img/gpx/${symbol}.png",
         //graphicsHeight: 32,
         //graphicsWidth: 32,
         graphicXOffset: -8,
@@ -170,7 +172,7 @@ PoiEditor.prototype.UpdateRow = function (pRow, pItem) {
 	BaseEditor.prototype.UpdateRow(pRow, pItem);
 	if (pItem["GeoObject"])
 	{
-		pRow.find(".IconCell").html("<img src='./img/geoedit/gpx/" + pItem.GeoObject.attributes.symbol + ".png'/>");
+		pRow.find(".IconCell").html("<img src='./img/gpx/" + pItem.GeoObject.attributes.symbol + ".png'/>");
 		if (pItem.GeoObject.attributes.radius)
 			pRow.find(".NameCell").html(pItem.name + "<span style='font-size: xx-small'> (" + pItem.GeoObject.attributes.radius + " m)</span>");
 	}
@@ -493,7 +495,7 @@ PoiEditor.prototype.CreateEditor = function () {
 	
 	for (var i=0; i<GpxIcons.Files.length; i++)
 	{
-		vSymbolList.append("<img src='./img/geoedit/gpx/" + GpxIcons.Files[i] + ".png' title='" + GpxIcons.Files[i] + "'/>");
+		vSymbolList.append("<img src='./img/gpx/" + GpxIcons.Files[i] + ".png' title='" + GpxIcons.Files[i] + "'/>");
 	}
 	vSymbolList.children("img").click(function() {
 		 vMainDiv.find("#cPoiEditorSymbol").val(this.title);

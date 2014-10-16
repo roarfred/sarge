@@ -33,7 +33,7 @@ VALUES(" . $data->ID . ", " .
 	}
 	
 	function add($searchid, $data) {
-		$data->ID = getNextID("Area");
+		$data->ID = getNextID("Scope");
 		return insert($searchid, $data, "I");
 	}
 
