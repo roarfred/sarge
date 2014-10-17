@@ -13,3 +13,5 @@ This application will work on top of a polaric server (http://www.la3t.no/polari
 * All information is stored in a backend database (MySQL)
 * Every change is timestamped and appended to the existing set, to allow for playback
 * Clients are keeping an open connection for immediate updates when any information changes
+
+Live development version available at http://polaric.erkh.no/sarge
