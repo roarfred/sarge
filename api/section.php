@@ -21,7 +21,7 @@ VALUES(" . $data->ID . ", " .
 		(empty($data->Description) ? "NULL" : "'" . $data->Description . "'") . ", " .
 		(empty($data->FillColor) ? "NULL" : "'" . $data->FillColor . "'") . ", " .
 		(empty($data->FillOpacity) ? "NULL" : $data->FillOpacity) . ", " .
-		(empty($data->LineColor) ? "NULL" : "'" . $data->LineWidth . "'") . ", " .
+		(empty($data->LineColor) ? "NULL" : "'" . $data->LineColor . "'") . ", " .
 		(empty($data->LineWidth) ? "NULL" : $data->LineWidth) . ", " .
 		(empty($data->Polygon) ? "NULL" : "'" . $data->Polygon . "'") .
 		")";

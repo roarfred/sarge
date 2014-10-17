@@ -13,23 +13,23 @@ AreaEditor.prototype.CreateItemFromServerItem = function(pData)
 {
 	var vEditor = this;
 	var vStyle = $j.extend(true, {}, OpenLayers.Feature.Vector.style['default']);
-	vStyle.fillColor = pData.FyllFarge;
-	vStyle.fillOpacity = pData.FyllGjennomsiktighet;
-	vStyle.strokeColor = pData.StrekFarge;
-	vStyle.strokeWidth = pData.StrekTykkelse;
-	vStyle.label = pData.Navn;
-	vStyle.title = pData.Beskrivelse;
+	vStyle.fillColor = pData.FillColor;
+	vStyle.fillOpacity = pData.FillOpacity;
+	vStyle.strokeColor = pData.LineColor;
+	vStyle.strokeWidth = pData.LineWidth;
+	vStyle.label = pData.Name;
+	vStyle.title = pData.Decription;
 
 	return {
-		name: pData.Navn,
+		name: pData.Name,
 		id: pData.ID,
-		timestamp: pData.TidsStempel,
-		GeoObject: vEditor.CreatePolygon(pData.Navn, eval(pData.Polygon), vStyle)
+		timestamp: pData.TimeStamp,
+		GeoObject: vEditor.CreatePolygon(pData.Name, eval(pData.Polygon), vStyle)
 	};
 }
 
-AreaEditor.prototype.GetWaitForDataUrl = function(pActivityID, pMaxTimeStamp) {
-	return SARLOGURL + "/api.php/geodata/teiger?aktivitetid=" + pActivityID + (pMaxTimeStamp ? "&tidsstempel=" + pMaxTimeStamp : "");
+AreaEditor.prototype.GetWaitForDataUrl = function(pSearchID, pMaxTimeStamp) {
+	return "./api/" + pSearchID + "/section/getlist" + (pMaxTimeStamp ? "/t" + pMaxTimeStamp : "");
 }
 AreaEditor.prototype.SaveItem = function(pItem) {
 	var vEditor = this;
@@ -41,24 +41,27 @@ AreaEditor.prototype.SaveItem = function(pItem) {
 		vPoint.transform(vEditor.Map.getProjectionObject(), vWGS84Projection);
 		vPoints.push([vPoint.x, vPoint.y]);
 	});
+
+	var vSearchID = vEditor.GetSearchID();	
+	var vUrl = "./api/" + vSearchID + "/section/" + (pItem.id ? "update" : "add");
+	
 	$j.ajax({
-		url: SARLOGURL + "/api.php/geodata/lagreteig",
+		url: vUrl,
 		type: "POST",
 		dataType: "json",
 		contentType: "application/json",
 		data: JSON.stringify({
-			AktivitetID: vEditor.GetAktivitetsID(),
-			Navn: pItem.GeoObject.style.label,
+			Name: pItem.GeoObject.style.label,
 			ID: pItem.id ? pItem.id : "",
-			Beskrivelse: pItem.GeoObject.style.title,
-			FyllFarge: pItem.GeoObject.style.fillColor,
-			FyllGjennomsiktighet: pItem.GeoObject.style.fillOpacity,
-			StrekFarge: pItem.GeoObject.style.strokeColor,
-			StrekTykkelse: pItem.GeoObject.style.strokeWidth,
+			Decription: pItem.GeoObject.style.title,
+			FillColor: pItem.GeoObject.style.fillColor,
+			FillOpacity: pItem.GeoObject.style.fillOpacity,
+			LineColor: pItem.GeoObject.style.strokeColor,
+			LineWidth: pItem.GeoObject.style.strokeWidth,
 			Polygon: JSON.stringify(vPoints)
 		}),
 		success: function(pData) {
-			pItem.timestamp = pData["TidsStempel"];
+			pItem.timestamp = pData["TimeStamp"];
 			pItem.id = pData["ID"];
 			vEditor.UpdateRow(vEditor.GetRowFromItem(pItem), pItem);
 		},
@@ -69,12 +72,11 @@ AreaEditor.prototype.DeleteItem = function(pItem) {
 	var vEditor = this;
 	if (pItem.id && pItem.GeoObject && confirm("Dette vil slette teigen. Vil du fortsette?")) {
 		$j.ajax({
-			url: SARLOGURL + "/api.php/geodata/slettteig",
+			url: "./api/" + vEditor.GetSearchID() + "/section/delete",
 			type: "POST",
 			dataType: "json",
 			contentType: "application/json",
 			data: JSON.stringify({
-				AktivitetID: vEditor.GetAktivitetsID(),
 				ID: pItem.id
 			}),
 			success: function(pData) {
@@ -143,7 +145,7 @@ AreaEditor.prototype.CreateEditor = function () {
     vMainDiv.append("<div><span class='EditorLabel'>Fyllfarge:</span><input id='cAreaEditorFillColor' type='text' class='EditorTextInput'/></div>");
     vMainDiv.append("<div><span class='EditorLabel'>Gjennomsiktig:</span><input id='cAreaEditorFillOpacity' type='text' class='EditorTextInput'/></div>");
     vMainDiv.append("<div><span class='EditorLabel'>Linjefarge:</span><input id='cAreaEditorStrokeColor' type='text' class='EditorTextInput'/></div>");
-    vMainDiv.append("<div><span class='EditorLabel'>Strektykkelse:</span><input id='cAreaEditorStrokeWidth' type='text' class='EditorTextInput'/></div>");
+    vMainDiv.append("<div><span class='EditorLabel'>Linjebredde:</span><input id='cAreaEditorStrokeWidth' type='text' class='EditorTextInput'/></div>");
     return vMainDiv;
 }
 

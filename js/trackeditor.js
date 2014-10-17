@@ -12,17 +12,17 @@ TrackEditor.prototype.CreateItemFromServerItem = function(pData)
 {
 	var vEditor = this;
 	var vStyle = $j.extend(true, {}, OpenLayers.Feature.Vector.style['default']);
-	vStyle.strokeColor = pData.StrekFarge;
-	vStyle.strokeWidth = pData.StrekTykkelse;
-	vStyle.strokeOpacity = pData.StrekGjennomsiktighet;
-	vStyle.label = pData.Navn;
-	vStyle.title = pData.Beskrivelse;
+	vStyle.strokeColor = pData.LineColor;
+	vStyle.strokeWidth = pData.LineWidth;
+	vStyle.strokeOpacity = pData.LineOpacity;
+	vStyle.label = pData.Name;
+	vStyle.title = pData.Description;
 
 	return {
-		name: pData.Navn,
+		name: pData.Name,
 		id: pData.ID,
-		timestamp: pData.TidsStempel,
-		GeoObject: vEditor.CreateTrack(pData.Navn, pData.Spor, vStyle)
+		timestamp: pData.TimeStamp,
+		GeoObject: vEditor.CreateTrack(pData.Name, pData.Track, vStyle)
 	};
 }
 
@@ -67,8 +67,8 @@ TrackEditor.prototype.CreateGpxItem = function(pItem) {
 }
 
 
-TrackEditor.prototype.GetWaitForDataUrl = function(pActivityID, pMaxTimeStamp) {
-	return SARLOGURL + "/api.php/geodata/sporlogger?aktivitetid=" + pActivityID + (pMaxTimeStamp ? "&tidsstempel=" + pMaxTimeStamp : "");
+TrackEditor.prototype.GetWaitForDataUrl = function(pSearchID, pMaxTimeStamp) {
+	return "./api/" + pSearchID + "/track/getlist" + (pMaxTimeStamp ? "/t" + pMaxTimeStamp : "");
 }
 TrackEditor.prototype.SaveItem = function(pItem) {
 	var vEditor = this;
@@ -93,23 +93,25 @@ TrackEditor.prototype.SaveItem = function(pItem) {
 			vPoints.splice(0, vTrimStart);
 	}
 	
+	var vSearchID = vEditor.GetSearchID();	
+	var vUrl = "./api/" + vSearchID + "/track/" + (pItem.id ? "update" : "add");
+
 	$j.ajax({
-		url: SARLOGURL + "/api.php/geodata/lagresporlogg",
+		url: vUrl,
 		type: "POST",
 		dataType: "json",
 		contentType: "application/json",
 		data: JSON.stringify({
-			AktivitetID: vEditor.GetAktivitetsID(),
-			Navn: pItem.GeoObject.style.label ? pItem.GeoObject.style.label : "",
+			Name: pItem.GeoObject.style.label ? pItem.GeoObject.style.label : "",
 			ID: pItem.id ? pItem.id : "",
-			Beskrivelse: pItem.GeoObject.style.title ? pItem.GeoObject.style.title : "",
-			StrekFarge: pItem.GeoObject.style.strokeColor,
-			StrekTykkelse: pItem.GeoObject.style.strokeWidth,
-			StrekGjennomsiktighet: pItem.GeoObject.style.strokeOpacity,
-			Spor: JSON.stringify(vPoints)
+			Description: pItem.GeoObject.style.title ? pItem.GeoObject.style.title : "",
+			LineColor: pItem.GeoObject.style.strokeColor,
+			LineWidth: pItem.GeoObject.style.strokeWidth,
+			LineOpacity: pItem.GeoObject.style.strokeOpacity,
+			Track: JSON.stringify(vPoints)
 		}),
 		success: function(pData) {
-			pItem.timestamp = pData["TidsStempel"];
+			pItem.timestamp = pData["TimeStamp"];
 			pItem.id = pData["ID"];
 			vEditor.UpdateRow(vEditor.GetRowFromItem(pItem), pItem);
 		},
@@ -120,12 +122,11 @@ TrackEditor.prototype.DeleteItem = function(pItem) {
 	var vEditor = this;
 	if (pItem.id && pItem.GeoObject && confirm("Dette vil slette sporloggen. Vil du fortsette?")) {
 		$j.ajax({
-			url: SARLOGURL + "/api.php/geodata/slettsporlogg",
+			url: "./api/" + vEditor.GetSearchID() + "/track/delete",
 			type: "POST",
 			dataType: "json",
 			contentType: "application/json",
 			data: JSON.stringify({
-				AktivitetID: vEditor.GetAktivitetsID(),
 				ID: pItem.id
 			}),
 			success: function(pData) {
