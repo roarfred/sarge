@@ -6,7 +6,7 @@ function CreateMap(pControlName) {
 	var vKaMapTopo = new OpenLayers.Layer.KaMap
 	(
 		"Topo",
-		"/aprs/KaMap/tile.php",
+		sargeConfig.aprsUrl + "/KaMap/tile.php",
 		{
 			g: "__base__", 
 			map: "topo2"
@@ -20,7 +20,7 @@ function CreateMap(pControlName) {
 	var vKaMapTopoRaster = new OpenLayers.Layer.KaMap
 	(
 		"Topo (raster)",
-		"/aprs/KaMap/tile.php",
+		sargeConfig.aprsUrl + "/KaMap/tile.php",
 		{
 			g: "__base__", 
 			map: "toporaster"
@@ -34,7 +34,7 @@ function CreateMap(pControlName) {
 	var vKaMapSea = new OpenLayers.Layer.KaMap
 	(
 		"Sj&oslash;kart",
-		"/aprs/KaMap/tile.php",
+		sargeConfig.aprsUrl + "/KaMap/tile.php",
 		{
 			g: "__base__", 
 			map: "sjo"

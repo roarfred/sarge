@@ -50,7 +50,7 @@ TrackerEditor.prototype.LoadTrackers = function(pWait)
 	}
 		
 	var vRequest = $j.ajax({
-		url: "/aprs/srv/mapdata",
+	    url: sargeConfig.aprsUrl + "/srv/mapdata",
 		type: "POST",
 		data: vData,
 		success: function(pResult) {
