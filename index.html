@@ -148,7 +148,7 @@
 			{
 				$j("#cSearchID").attr("SearchID", getParameterByName("SearchID"));
 				$j.ajax({
-					url: "./api/search/get/" + vSearchID,
+					url: sargeConfig.sargeApi + "search/get/" + vSearchID,
 					type: "GET",
 					dataType: "json",
 					success: function(pData) {
@@ -165,7 +165,7 @@
 				}
 			
 				$j.ajax({
-					url: "./api/search/getlist",
+				    url: sargeConfig.sargeApi + "search/getlist",
 					type: "GET",
 					dataType: "json",
 					success: function(pData) {
@@ -235,10 +235,10 @@
 				MapZoom: $j("#cSearchMapZoom").val()
 			};
 			
-			var vUrl = "./api/search/add";
+			var vUrl = sargeConfig.sargeApi + "search/add";
 			if ($j("#cSearchID").attr("SearchID")) {
 				vData.ID = $j("#cSearchID").attr("SearchID");
-				vUrl = "./api/search/update";
+				vUrl = sargeConfig.sargeApi + "search/update";
 			}
 			
 			$j.ajax({

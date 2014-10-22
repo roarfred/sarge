@@ -74,36 +74,35 @@ TrackerEditor.prototype.LoadTrackers = function(pWait)
 }
 TrackerEditor.prototype.ShowTrackers = function(pXml)
 {	
-	var vEditor = this;
-	var vPoints = pXml.getElementsByTagName("point");
-	if (vPoints.length > 0)
-	{
-		var vSelectedItem = vEditor.SelectedItem;
-		
-		vEditor.Items = new Array();
-		var vLayer = vEditor.GetMapLayer();
-		vLayer.removeAllFeatures();
-		for (var i=0; i<vPoints.length; i++)
-		{
-			var vPoint = vPoints[i];
-			var vSymbol = vPoint.getElementsByTagName("icon")[0].getAttribute("src"); //"srv/icons/car.gif"; //vPoint.selectNode("icon").getAttribute("src");
-			var vName = vPoint.getElementsByTagName("label").length > 0 ? vPoint.getElementsByTagName("label")[0].textContent.trim() : "";
-			var vDescription = vPoint.getAttribute("title").trim();
-			var vLines = vPoint.getElementsByTagName("linestring");
-			var vLine = vLines.length > 0 ? vLines[0] : null;
-			vEditor.Items.push(vEditor.CreatePoint(vPoint.getAttribute("x"), vPoint.getAttribute("y"), vName, vSymbol, vDescription, vLine));
-		}
-		
-		BaseEditor.prototype.PopulateTable.call(vEditor);
+    if (pXml["getElementsByTagName"]) {
+        var vEditor = this;
+        var vPoints = pXml.getElementsByTagName("point");
+        if (vPoints.length > 0) {
+            var vSelectedItem = vEditor.SelectedItem;
 
-		if (vSelectedItem)
-		{
-			vEditor.Items.each(function(e) { 
-				if (e.name == vSelectedItem.name)
-					vEditor.SelectItem(e);
-			});
-		}
-	}
+            vEditor.Items = new Array();
+            var vLayer = vEditor.GetMapLayer();
+            vLayer.removeAllFeatures();
+            for (var i = 0; i < vPoints.length; i++) {
+                var vPoint = vPoints[i];
+                var vSymbol = vPoint.getElementsByTagName("icon")[0].getAttribute("src"); //"srv/icons/car.gif"; //vPoint.selectNode("icon").getAttribute("src");
+                var vName = vPoint.getElementsByTagName("label").length > 0 ? vPoint.getElementsByTagName("label")[0].textContent.trim() : "";
+                var vDescription = vPoint.getAttribute("title").trim();
+                var vLines = vPoint.getElementsByTagName("linestring");
+                var vLine = vLines.length > 0 ? vLines[0] : null;
+                vEditor.Items.push(vEditor.CreatePoint(vPoint.getAttribute("x"), vPoint.getAttribute("y"), vName, vSymbol, vDescription, vLine));
+            }
+
+            BaseEditor.prototype.PopulateTable.call(vEditor);
+
+            if (vSelectedItem) {
+                vEditor.Items.each(function (e) {
+                    if (e.name == vSelectedItem.name)
+                        vEditor.SelectItem(e);
+                });
+            }
+        }
+    }
 }
 TrackerEditor.prototype.CreatePoint = function(pLat, pLon, pName, pSymbol, pDescription, pLine) {
 	var vPoint = new OpenLayers.Geometry.Point(pLat, pLon);

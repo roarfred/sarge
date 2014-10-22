@@ -1,6 +1,8 @@
 <?php
 	ini_set('display_errors','on');
-
+    
+    header("Access-Control-Allow-Origin: *");
+    
 	$func = $_GET["operation"];
 	$searchid = $_GET["searchid"];
 	$id = $_GET["id"];

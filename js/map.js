@@ -2,63 +2,79 @@ function CreateMap(pControlName) {
 	OpenLayers.IMAGE_RELOAD_ATTEMPTS = 30;
 
 	var vStatkartAttribution = '<a href="http://www.statkart.no">Statens kartverk</a>, <a href="http://www.statkart.no/nor/Land/Fagomrader/Geovekst/">Geovekst</a> og <a href="http://www.statkart.no/?module=Articles;action=Article.publicShow;ID=14194">kommuner</a>';
-
-	var vKaMapTopo = new OpenLayers.Layer.KaMap
-	(
-		"Topo",
-		sargeConfig.aprsUrl + "/KaMap/tile.php",
-		{
-			g: "__base__", 
-			map: "topo2"
-		},
-		{
-			defaultExtents: [412160.0835,7524179.9165,939092.0835,7936174.917],
-			scales: new Array('2000000','1000000','600000','400000','200000','100000','60000','40000','25000','15000','12500','10000','8000','6000','4000','2000','1000','600'),
-			buffer: 2
-		}
-	);   
-	var vKaMapTopoRaster = new OpenLayers.Layer.KaMap
-	(
-		"Topo (raster)",
-		sargeConfig.aprsUrl + "/KaMap/tile.php",
-		{
-			g: "__base__", 
-			map: "toporaster"
-		},
-		{
-			defaultExtents: [412160.0835,7524179.9165,939092.0835,7936174.917],
-			scales: new Array('2000000','1000000','600000','400000','200000','100000','60000','40000','25000','15000','12500','10000','8000','6000','4000','2000','1000','600'),
-			buffer: 2
-		}
-	);   
-	var vKaMapSea = new OpenLayers.Layer.KaMap
-	(
-		"Sj&oslash;kart",
-		sargeConfig.aprsUrl + "/KaMap/tile.php",
-		{
-			g: "__base__", 
-			map: "sjo"
-		},
-		{
-			defaultExtents: [412160.0835,7524179.9165,939092.0835,7936174.917],
-			scales: new Array('2000000','1000000','600000','400000','200000','100000','60000','40000','25000','15000','12500','10000','8000','6000','4000','2000','1000','600'),
-			buffer: 2
-		}
-	);   
-	/*
-	var vFlyFoto =  new OpenLayers.Layer.WMS(
-            "Norge i bilder (flyfoto)", "http://cache.norgeibilder.no/geowebcache/service/wms?",
-            {  layers: 'NiB',
-               format: 'image/jpeg'},
-            {  attribution: "Skog og landskap, Statens vegvesen og Statens kartverk" }
-        );
-    var vSjoKart = new OpenLayers.Layer.WMS(
-             "Kartverket SjÃ¸kart", "http://opencache.statkart.no/gatekeeper/gk/gk.open?",
-             {  layers: 'sjo_hovedkart2',
-                format: 'image/png'},
-             {  attribution: vStatkartAttribution }
-        );
-	*/
+	var vMaps = [];
+	vMaps.push(new OpenLayers.Layer.WMS("KV Topo2",
+        sargeConfig.mapCacheUrl, { layers: 'kv_topo2' },
+        {
+            gutter: 0, ratio: 1, isBaseLayer: true, transitionEffect: 'resize',
+            resolutions: [1354.00000000000000000000, 677.00000000000000000000, 338.50000000000000000000, 169.25000000000000000000, 84.62500000000000000000, 42.31250000000000000000, 21.15625000000000000000, 10.57812479999999943914, 5.28906239999999971957, 2.64453119999999985978, 1.32226559999999992989, 0.66113279999999994274],
+            units: "m",
+            maxExtent: new OpenLayers.Bounds(-2500000.000000, 3500000.000000, 3045984.000000, 9045984.000000),
+            projection: new OpenLayers.Projection("EPSG:32633".toUpperCase()),
+            sphericalMercator: false,
+            attribution: vStatkartAttribution
+        }
+    ));
+	vMaps.push(new OpenLayers.Layer.WMS("KV Topo2 Gråtone",
+        sargeConfig.mapCacheUrl, { layers: 'kv_topo2graatone' },
+        {
+            gutter: 0, ratio: 1, isBaseLayer: true, transitionEffect: 'resize',
+            resolutions: [1354.00000000000000000000, 677.00000000000000000000, 338.50000000000000000000, 169.25000000000000000000, 84.62500000000000000000, 42.31250000000000000000, 21.15625000000000000000, 10.57812479999999943914, 5.28906239999999971957, 2.64453119999999985978, 1.32226559999999992989, 0.66113279999999994274],
+            units: "m",
+            maxExtent: new OpenLayers.Bounds(-2500000.000000, 3500000.000000, 3045984.000000, 9045984.000000),
+            projection: new OpenLayers.Projection("EPSG:32633".toUpperCase()),
+            sphericalMercator: false,
+            attribution: vStatkartAttribution
+        }
+    ));
+	vMaps.push(new OpenLayers.Layer.WMS("KV Europa",
+        sargeConfig.mapCacheUrl, { layers: 'kv_europa' },
+        {
+            gutter: 0, ratio: 1, isBaseLayer: true, transitionEffect: 'resize',
+            resolutions: [1354.00000000000000000000, 677.00000000000000000000, 338.50000000000000000000, 169.25000000000000000000, 84.62500000000000000000, 42.31250000000000000000, 21.15625000000000000000, 10.57812479999999943914, 5.28906239999999971957, 2.64453119999999985978, 1.32226559999999992989, 0.66113279999999994274],
+            units: "m",
+            maxExtent: new OpenLayers.Bounds(-2500000.000000, 3500000.000000, 3045984.000000, 9045984.000000),
+            projection: new OpenLayers.Projection("EPSG:32633".toUpperCase()),
+            sphericalMercator: false,
+            attribution: vStatkartAttribution
+        }
+    ));
+	vMaps.push(new OpenLayers.Layer.WMS("KV Topo Raster",
+        sargeConfig.mapCacheUrl, { layers: 'kv_toporaster2' },
+        {
+            gutter: 0, ratio: 1, isBaseLayer: true, transitionEffect: 'resize',
+            resolutions: [1354.00000000000000000000, 677.00000000000000000000, 338.50000000000000000000, 169.25000000000000000000, 84.62500000000000000000, 42.31250000000000000000, 21.15625000000000000000, 10.57812479999999943914, 5.28906239999999971957, 2.64453119999999985978, 1.32226559999999992989, 0.66113279999999994274],
+            units: "m",
+            maxExtent: new OpenLayers.Bounds(-2500000.000000, 3500000.000000, 3045984.000000, 9045984.000000),
+            projection: new OpenLayers.Projection("EPSG:32633".toUpperCase()),
+            sphericalMercator: false,
+            attribution: vStatkartAttribution
+        }
+    ));
+	vMaps.push(new OpenLayers.Layer.WMS("KV Sjøkart",
+        sargeConfig.mapCacheUrl, { layers: 'kv_sjo_hovedkart2' },
+        {
+            gutter: 0, ratio: 1, isBaseLayer: true, transitionEffect: 'resize',
+            resolutions: [1354.00000000000000000000, 677.00000000000000000000, 338.50000000000000000000, 169.25000000000000000000, 84.62500000000000000000, 42.31250000000000000000, 21.15625000000000000000, 10.57812479999999943914, 5.28906239999999971957, 2.64453119999999985978, 1.32226559999999992989, 0.66113279999999994274],
+            units: "m",
+            maxExtent: new OpenLayers.Bounds(-2500000.000000, 3500000.000000, 3045984.000000, 9045984.000000),
+            projection: new OpenLayers.Projection("EPSG:32633".toUpperCase()),
+            sphericalMercator: false,
+            attribution: vStatkartAttribution
+        }
+    ));
+	vMaps.push(new OpenLayers.Layer.WMS("KV Norges Grunnkart",
+        sargeConfig.mapCacheUrl, { layers: 'kv_norges_grunnkart' },
+        {
+            gutter: 0, ratio: 1, isBaseLayer: true, transitionEffect: 'resize',
+            resolutions: [1354.00000000000000000000, 677.00000000000000000000, 338.50000000000000000000, 169.25000000000000000000, 84.62500000000000000000, 42.31250000000000000000, 21.15625000000000000000, 10.57812479999999943914, 5.28906239999999971957, 2.64453119999999985978, 1.32226559999999992989, 0.66113279999999994274],
+            units: "m",
+            maxExtent: new OpenLayers.Bounds(-2500000.000000, 3500000.000000, 3045984.000000, 9045984.000000),
+            projection: new OpenLayers.Projection("EPSG:32633".toUpperCase()),
+            sphericalMercator: false,
+            attribution: vStatkartAttribution
+        }
+    ));
 
 	Proj4js.defs["EPSG:32632"] = "+proj=utm +zone=32 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
 
@@ -74,18 +90,16 @@ function CreateMap(pControlName) {
 		pControlName,
 	   {
 		 maxResolution: 1354.0, 
-		 minResolution: 0.6611328, 
+		 minResolution: 0.66113279999999994274,
 		 maxExtent: new OpenLayers.Bounds(-2500000.0,3500000.0,3045984.0,9045984.0),
 		 units: "m",
 		 projection: vUtm33Projection,
 		 displayProjection: vWGS84Projection,
-		 numZoomLevels: 17,
-		 layers: []
+		 numZoomLevels: 12,
+		 layers: vMaps
 		}
 	);
 
-	map.addLayers([vKaMapTopo, vKaMapTopoRaster, vKaMapSea]); //, vFlyFoto, vSjoKart]);
-	
 	//map.addControl(new OpenLayers.Control.Navigation());
 	map.addControl(new OpenLayers.Control.PanZoomBar());
 	map.addControl(new OpenLayers.Control.MousePosition({
