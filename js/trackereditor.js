@@ -115,7 +115,7 @@ TrackerEditor.prototype.CreatePoint = function(pLat, pLon, pName, pSymbol, pDesc
 	
 	var vFeature = new OpenLayers.Feature.Vector(vPoint, { name: pName, symbol: pSymbol, description: pDescription, line: pLine });
 
-	var vMap = GetMapLayer();
+	var vMap = this.GetMapLayer();
 	var vWGS84Projection = new OpenLayers.Projection("EPSG:4326");
 	vFeature.geometry.transform(vWGS84Projection, vMap.getProjectionObject());
 	vMap.addFeatures(vFeature);
