@@ -464,8 +464,8 @@ BaseEditor.prototype.GetMapLayer = function()
     return vLayer;
 }
 
-BaseEditor.prototype.CreateMapLayer = function () {
-  var vLatLng = new OpenLayers.Projection("EPSG:4326");
+BaseEditor.prototype.CreateMapLayer = function (pProjection) {
+    var vLatLng = pProjection | new OpenLayers.Projection("EPSG:4326");
 //	var vUtm = new OpenLayers.Projection("EPSG:32633");
 	var vEditor = this;
 	var vLayer = new OpenLayers.Layer.Vector(vEditor.Caption,

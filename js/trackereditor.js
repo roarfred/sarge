@@ -114,7 +114,11 @@ TrackerEditor.prototype.CreatePoint = function(pLat, pLon, pName, pSymbol, pDesc
 	var vPoint = new OpenLayers.Geometry.Point(pLat, pLon);
 	
 	var vFeature = new OpenLayers.Feature.Vector(vPoint, { name: pName, symbol: pSymbol, description: pDescription, line: pLine });
-	this.GetMapLayer().addFeatures(vFeature);
+
+	var vMap = GetMapLayer();
+	var vWGS84Projection = new OpenLayers.Projection("EPSG:4326");
+	vFeature.geometry.transform(vWGS84Projection, vMap.getProjectionObject());
+	vMap.addFeatures(vFeature);
 	
 	return this.CreateGeoObjectFromPoint(vFeature);
 }
@@ -157,7 +161,7 @@ TrackerEditor.prototype.CreateEndPointMarker = function(x, y, pName, pColor)
 	return vFeature;
 }
 TrackerEditor.prototype.CreateMapLayer = function () {
-	var vLayer = BaseEditor.prototype.CreateMapLayer.call(this);
+    var vLayer = BaseEditor.prototype.CreateMapLayer.call(this);
 	var vEditor = this;
 	
     var vDefaultStyle = new OpenLayers.Style({
