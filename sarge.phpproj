@@ -18,6 +18,7 @@
   <ItemGroup>
     <Compile Include="api\api_db.php" />
     <Compile Include="api\area.php" />
+    <Compile Include="api\echogpx.php" />
     <Compile Include="api\poi.php" />
     <Compile Include="api\scope.php" />
     <Compile Include="api\search.php" />
@@ -29,6 +30,7 @@
   <ItemGroup>
     <Content Include=".htaccess" />
     <Content Include="api\test.html" />
+    <Content Include="css\dropzone.css" />
     <Content Include="css\images\animated-overlay.gif" />
     <Content Include="css\images\ui-bg_flat_0_aaaaaa_40x100.png" />
     <Content Include="css\images\ui-bg_flat_75_ffffff_40x100.png" />
@@ -272,6 +274,7 @@
     <Content Include="index.html" />
     <Content Include="js\areaeditor.js" />
     <Content Include="js\baseeditor.js" />
+    <Content Include="js\dropzone.js" />
     <Content Include="js\GarminDevicePlugin.js" />
     <Content Include="js\GarminGpsDataStructures.js" />
     <Content Include="js\img\blank.gif" />

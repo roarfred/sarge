@@ -5,6 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
     <link rel="stylesheet" href="./css/jquery-ui.min.css" />
     <link rel="stylesheet" href="./css/mapeditor.css" />
+    <link rel="stylesheet" href="./css/dropzone.css" />
 
     <style type="text/css">
 		.SearchSection {font-size: 8pt; color: gray; margin: 3px}
@@ -25,6 +26,7 @@
 	</style>
 
     <script type="text/javascript" src="./js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="./js/dropzone.js"></script>
 
 	<script type="text/javascript">     
 		var $j = jQuery.noConflict();
@@ -360,6 +362,20 @@
 				results = regex.exec(location.search);
 			return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 		}
+
+		$j(function () {
+		    Dropzone.options.cDropzone = {
+		        dictDefaultMessage: "Drop GPX file here, or click to browse",
+		        init: function () {
+		            this.on("addedfile", function (file) {
+		            });
+		        },
+		        success: function (x, y) {
+		            this.removeAllFiles(true);
+		            $j("#cGpx").val(y);
+		        }
+		    };
+		});
     </script>
     </head>
     <body style="margin: 0px; overflow: hidden">
@@ -379,8 +395,9 @@
 								<input type="button" value="Send til GPS" onclick="SendSelectedItemsToGps()"/>
 								<div>
 									<small><i>GPX data: (for input and output)</i></small>
-									<textarea id="cGpx"></textarea>
-								</div>
+									<textarea id="cGpx" style="width: 100%; height: 100px"></textarea>
+                                    <form action="./api/echogpx.php" method="post" enctype="multipart/form-data" id="cDropzone" class="dropzone"></form>
+                                </div>
 								<div id="cMainGarminInfo"></div>
 							</div>
 						</div>

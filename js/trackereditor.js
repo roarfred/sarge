@@ -33,11 +33,17 @@ TrackerEditor.prototype.LoadTrackers = function(pWait)
 	var vEditor = this;
 	var vScale = Math.round(vEditor.Map.getScale()).toFixed(0);
 	var vExtent = vEditor.Map.getExtent();
+
+	var vWGS84Projection = new OpenLayers.Projection("EPSG:4326");
+	var vUtm33Projection = new OpenLayers.Projection("EPSG:32633");
+	vExtent = vExtent.transform(vUtm33Projection, vWGS84Projection);
+	//alert(JSON.stringify(vExtent));
+
 	var vData = {
-		x1: vExtent.left.toFixed(0),
-		x2: vExtent.bottom.toFixed(0),
-		x3: vExtent.right.toFixed(0),
-		x4: vExtent.top.toFixed(0),
+		x1: vExtent.left,
+		x2: vExtent.bottom,
+		x3: vExtent.right,
+		x4: vExtent.top,
 		filter: "alle",
 		scale: vScale,
 		clientses: 1
