@@ -265,6 +265,9 @@ TrackerEditor.prototype.CreateLineFeature = function(x, y, pLine)
 	var vLineString = new OpenLayers.Geometry.LineString(vPoints);
 	var vFeature = new OpenLayers.Feature.Vector(vLineString);
 	
+	var vWGS84Projection = new OpenLayers.Projection("EPSG:4326");
+	vFeature.geometry.transform(vWGS84Projection, this.Map.getProjectionObject());
+
 	var vStyle = $j.extend(true, {
 		strokeColor: "#" + pLine.attributes["color"].value,
 		strokeOpacity: pLine.attributes["opacity"].value,
