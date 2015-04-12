@@ -268,12 +268,12 @@ TrackerEditor.prototype.CreateLineFeature = function(x, y, pLine)
 	var vWGS84Projection = new OpenLayers.Projection("EPSG:4326");
 	vFeature.geometry.transform(vWGS84Projection, this.Map.getProjectionObject());
 
-	var vStyle = $j.extend(true, {
+	var vStyle = $j.extend(true, {}, OpenLayers.Feature.Vector.style['default'], {
 		strokeColor: "#" + pLine.attributes["color"].value,
 		strokeOpacity: pLine.attributes["opacity"].value,
-		strokeWidth: pLine.attributes["stroke"].value * 2 + 1,
+		strokeWidth: parseInt(pLine.attributes["stroke"].value) | 2,
 		graphicZIndex: -99
-	}, OpenLayers.Feature.Vector.style['default']);
+	});
 	
 	vFeature.style = vStyle;
 	return vFeature;
